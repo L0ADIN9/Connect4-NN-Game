@@ -1,4 +1,5 @@
-package games.connect_four;
+package org.example.data_processing;
+import org.example.ConnectFour;
 
 public class Minimax {
 

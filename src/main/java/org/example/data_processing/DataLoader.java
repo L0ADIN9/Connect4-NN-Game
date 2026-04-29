@@ -1,4 +1,4 @@
-package games.connect_four;
+package org.example.data_processing;
 
 import java.io.File;
 import java.util.ArrayList;

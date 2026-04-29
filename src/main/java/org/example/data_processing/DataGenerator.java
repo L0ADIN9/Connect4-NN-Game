@@ -1,7 +1,8 @@
-package games.connect_four;
+package org.example.data_processing;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import org.example.ConnectFour;
 
 public class DataGenerator {
 
@@ -64,6 +65,6 @@ public class DataGenerator {
     }
 
     public static void main(String[] args) throws IOException {
-        new DataGenerator().generate(3000, "connectFour.txt");
+        new DataGenerator().generate(3000, "connectFourApr24.txt");
     }
 }

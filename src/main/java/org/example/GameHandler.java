@@ -2,7 +2,7 @@ package org.example;
 
 public class GameHandler {
     private static boolean playerTurn = true;
-    private static int [][] board = new int[7][6];
+    private static int [][] board = new int[6][7];
     private static int turnCnt = 0;
     /*
     0 = empty slot
@@ -15,7 +15,8 @@ public class GameHandler {
         turnCnt = 0;
         while (turnCnt < 42){
             if (playerTurn) {
-                move(Main.getPlayerInputPos(), 1);
+
+
                 }
             if (!playerTurn) {
                 move(Main.getBotInputPos(), 2);
@@ -26,11 +27,8 @@ public class GameHandler {
 
 
     }
-
-
-
     public static void clearBoard(){
-        board = new int[7][6];
+        board = new int[6][7];
     }
     public static int whoTurn(){
         if(playerTurn) return 1;
@@ -45,20 +43,29 @@ public class GameHandler {
         // 1 = human
         // 2 = bot
         int top = 5;
-        while(board[pos][top] != 0){
+        while(board[top][pos] != 0){
             top--;
             if(top <0){
                 System.out.println("ILLEGAL MOVE");
                 return;
             }
         }
-        board[pos][top] = who;
-        //checks to see if this is a winning move
-        if(checkWin(pos,top)) win(who);
+        board[top][pos] = who;
+    }
+    public static boolean isValidMove(int pos){
+        int top = 5;
+        while(board[top][pos] != 0){
+            top--;
+            if(top <0){
+                System.out.println("ILLEGAL MOVE");
+                return false;
+            }
+        }
+        return true;
 
     }
     public static boolean checkWin(int x, int y){
-        int who = board[x][y];
+        int who = board[y][x];
         for(int xv= -1; xv<2; xv++){
             for(int yv = -1; yv<2; yv++){
                 for(int i = 0; i< 4; i++){
@@ -69,7 +76,7 @@ public class GameHandler {
                     //checks if the y val is out of bounds
                     if(y+yv*i<0 ||y+yv*i>= 6)break;
                     //checks if the val doesn't match the pattern
-                    if(board[x+xv*i][y+yv*i]!= who)break;
+                    if(board[y+yv*i][x+xv*i]!= who)break;
                     else if (i==3) return true;
                     // if these match for the 4th time in a row, then winner!
                 }

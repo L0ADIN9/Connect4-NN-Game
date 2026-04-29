@@ -1,4 +1,4 @@
-package games.connect_four;
+package org.example;
 
 public class ConnectFour {
 

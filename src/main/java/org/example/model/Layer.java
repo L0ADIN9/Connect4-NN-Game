@@ -1,6 +1,6 @@
-package model;
-import model.math.Init;
-import model.math.Matrix;
+package org.example.model;
+import org.example.model.math.Init;
+import org.example.model.math.Matrix;
 
 public class Layer {
 

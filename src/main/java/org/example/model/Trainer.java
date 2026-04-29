@@ -1,7 +1,7 @@
-package model;
+package org.example.model;
 
-import games.connect_four.DataLoader;
-import model.math.Matrix;
+import org.example.data_processing.DataLoader;
+import org.example.model.math.Matrix;
 
 public class Trainer {
 
@@ -95,7 +95,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) throws Exception {
-        Trainer model = new Trainer(new DataLoader("src/data/connect_four/connectFour.txt"), new int[]{42, 256, 128, 64, 7}, 15, 0.005);
+        Trainer model = new Trainer(new DataLoader("/src/main/resources/training_data/connectFourApr24.txt"), new int[]{42, 256, 128, 64, 7}, 15, 0.005);
 
         double loss = model.train();
         System.out.println("Final loss: " + loss);

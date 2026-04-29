@@ -1,10 +1,10 @@
-package model;
+package org.example.model;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
-import model.math.Matrix;
+import org.example.model.math.Matrix;
 
 public class Model {
 

@@ -1,7 +1,10 @@
-package games.connect_four;
+package org.example.data_processing;
 
-import model.Model;
+import org.example.model.Model;
 import java.util.Scanner;
+import org.example.ConnectFour;
+
+
 
 public class Game {
 

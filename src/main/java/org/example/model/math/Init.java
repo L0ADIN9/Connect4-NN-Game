@@ -1,4 +1,4 @@
-package model.math;
+package org.example.model.math;
 
 public class Init {
 
