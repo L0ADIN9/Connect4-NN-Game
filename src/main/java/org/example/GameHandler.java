@@ -44,10 +44,10 @@ public class GameHandler {
         // who is which player's turn it is repersented numerically
         // 1 = human
         // 2 = bot
-        int top = 0;
+        int top = 5;
         while(board[pos][top] != 0){
-            top++;
-            if(top >=6){
+            top--;
+            if(top <0){
                 System.out.println("ILLEGAL MOVE");
                 return;
             }
