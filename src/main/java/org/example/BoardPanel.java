@@ -7,6 +7,8 @@ import java.awt.event.KeyEvent;
 public class BoardPanel extends JPanel{
     private int padding = 20;
     private int gap = 10;
+
+    public static int pressedKey = -1;
     public BoardPanel() {
         setBackground(Color.gray);
         setFocusable(true);
@@ -24,8 +26,10 @@ public class BoardPanel extends JPanel{
                 if (k.getKeyCode() == KeyEvent.VK_6) col = 5;
                 if (k.getKeyCode() == KeyEvent.VK_7) col = 6;
                 if (col != -1) {
-                    GameHandler.move(col,1);
-                    GameHandler.move(Main.getBotInputPos(),2);
+                    synchronized (GameWindow.class){
+                        pressedKey = col;
+                        GameWindow.class.notifyAll();
+                    }
                     repaint();
                 }
             }
@@ -33,6 +37,7 @@ public class BoardPanel extends JPanel{
 
 
     }
+
 
     // use repaint( ) to update board
     @Override
@@ -58,8 +63,8 @@ public class BoardPanel extends JPanel{
         for(int i = 0; i< 7; i++){
             for(int j = 0; j< 6; j++){
                 Color cl = Color.white;
-                if(brd[j][i] == 1) cl = Color.red;
-                if(brd[j][i] == 2) cl = Color.yellow;
+                if(brd[j][i] == 1) cl = Color.yellow;
+                if(brd[j][i] == 2) cl = Color.red;
 
                 g.setColor(cl);
                 g.fillOval(centX + i*cellScale+(int)(.1*cellScale),centY+j*cellScale+(int)(.1*cellScale), (int)(.8*cellScale),(int)(.8*cellScale));

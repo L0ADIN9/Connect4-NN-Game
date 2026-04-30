@@ -9,19 +9,31 @@ public class GameHandler {
     1 = human chip
     2 = bot chip
      */
-    public static void startGame(boolean humanFirst) {
+    public void startGame(boolean humanFirst) throws  Exception{
         clearBoard();
         playerTurn = humanFirst;
         turnCnt = 0;
         while (turnCnt < 42){
+            int mv=0;
             if (playerTurn) {
-
-
+                while (true){
+                    mv= Main.getHumanInputPos();
+                    if(isValidMove(mv)){
+                        move(mv, 1);
+                        break;
+                    }
                 }
-            if (!playerTurn) {
-                move(Main.getBotInputPos(), 2);
             }
+            if (!playerTurn) {
+                Thread.sleep(500);
+                mv = Main.getBotInputPos();
+                move(mv, 2);
+            }
+
+            playerTurn  = !playerTurn;
             turnCnt++;
+            GameWindow.boardP.repaint();
+
         }
         if(turnCnt>=42) draw();
 
@@ -53,6 +65,7 @@ public class GameHandler {
         board[top][pos] = who;
     }
     public static boolean isValidMove(int pos){
+        if (0>pos || pos>7) return false;
         int top = 5;
         while(board[top][pos] != 0){
             top--;

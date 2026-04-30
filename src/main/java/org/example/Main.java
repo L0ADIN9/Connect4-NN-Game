@@ -14,11 +14,17 @@ public class Main {
         model = new Model(new int[]{42, 256, 128, 64, 7});
         model.load("src/main/resources/saved_models/model.txt");
 
+
+
         SwingUtilities.invokeLater(() -> {
             new GameWindow();
         });
+        GameHandler game = new GameHandler();
+        game.startGame(false);
+
 
     }
+
     private static String encodeBoard(int currentPlayer) {
         int[][] b = GameHandler.getBoard();
         int opponent = 3 - currentPlayer;
@@ -48,13 +54,35 @@ public class Main {
         int best = -1;
         double bestScore = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < 7; i++) {
+            System.out.println(output[i][0]);
             if (GameHandler.isValidMove(i) && output[i][0] > bestScore) {
                 bestScore = output[i][0];
                 best = i;
             }
         }
+        System.out.println("Move");
+
+
         return best;
 
 
     }
+    public synchronized static int getHumanInputPos(){
+        synchronized (GameWindow.class) {
+
+            while (BoardPanel.pressedKey == -1 ) {
+                try {
+                    GameWindow.class.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            int ret = BoardPanel.pressedKey;
+            BoardPanel.pressedKey = -1;
+            return ret;
+        }
+
+    }
+
 }
