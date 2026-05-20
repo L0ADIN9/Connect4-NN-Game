@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         model = new Model(new int[]{42, 256, 128, 64, 7});
-        model.load("src/main/resources/saved_models/model.txt");
+        model.load("src/main/resources/saved_models/model_v3.txt");
 
 
 
@@ -65,11 +65,12 @@ public class Main {
     }
 
     public static int getBotInputPos(){
-        int[][] b = GameHandler.getBoard();
 
-        // =============================================
-        // PRIORITY 1: Win immediately if possible
-        // =============================================
+/*
+        int[][] b = GameHandler.getBoard();
+        // Take AI Winning Move
+
+
         for (int col = 0; col < 7; col++) {
             if (GameHandler.isValidMove(col) && canWinAt(b, col, 2)) {
                 System.out.println("Heuristic: WINNING move at column " + col);
@@ -77,9 +78,8 @@ public class Main {
             }
         }
 
-        // =============================================
-        // PRIORITY 2: Block opponent's immediate win
-        // =============================================
+        // Block Human Winning Move
+
         int blockCol = -1;
         int threatCount = 0;
         for (int col = 0; col < 7; col++) {
@@ -94,12 +94,8 @@ public class Main {
             return blockCol;
         }
 
-        // =============================================
-        // PRIORITY 3: Block opponent's double-threat setup
-        // If the opponent could play somewhere next turn and
-        // create 2+ simultaneous winning threats (a fork),
-        // preemptively play in that column to prevent it.
-        // =============================================
+        // Block Future Human Fork
+
         for (int col = 0; col < 7; col++) {
             if (!GameHandler.isValidMove(col)) continue;
             int row = findLandingRow(b, col);
@@ -136,12 +132,8 @@ public class Main {
             }
         }
 
-        // =============================================
-        // PRIORITY 4: Identify columns to avoid
-        // Avoid moves that give the opponent a winning
-        // cell directly above, or that let the opponent
-        // win anywhere on their reply.
-        // =============================================
+        // Block Gives Human Winning Move
+
         boolean[] avoid = new boolean[7];
         int validCount = 0;
         int avoidCount = 0;
@@ -191,10 +183,11 @@ public class Main {
                 b[row][col] = 0;
             }
         }
+        */
 
-        // =============================================
-        // FALL BACK: Neural network (with avoid filter)
-        // =============================================
+
+        // NN predictions
+
         double[][] input = new double[42][1];
         String[] parts = encodeBoard(2).split(",");
         for (int i = 0; i < 42; i++) {
@@ -203,20 +196,19 @@ public class Main {
 
         double[][] output = model.forward(input);
 
-        // Pick the best non-avoided column
+        // Pick the best column
         int best = -1;
         double bestScore = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < 7; i++) {
-            System.out.println("Col " + i + ": nn=" + String.format("%.4f", output[i][0])
-                    + (avoid[i] ? " [AVOID]" : "")
-                    + (!GameHandler.isValidMove(i) ? " [FULL]" : ""));
-            if (GameHandler.isValidMove(i) && !avoid[i] && output[i][0] > bestScore) {
+            System.out.println(output[i][0]);
+
+            if (GameHandler.isValidMove(i) /*&& !avoid[i]*/ && output[i][0] > bestScore) {
                 bestScore = output[i][0];
                 best = i;
             }
         }
-
-        // If all valid columns are avoided, just pick the best valid one anyway
+        /*
+        // If all valid columns are avoided
         if (best == -1) {
             System.out.println("Warning: all columns flagged, falling back to best valid");
             for (int i = 0; i < 7; i++) {
@@ -226,9 +218,11 @@ public class Main {
                 }
             }
         }
+        */
 
-        System.out.println("Move (NN): column " + best);
+        System.out.println("Bot Move:" + best);
         return best;
+
     }
 
 
