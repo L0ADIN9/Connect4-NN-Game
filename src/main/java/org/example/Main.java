@@ -21,7 +21,7 @@ public class Main {
             gWindow = new GameWindow();
         });
         GameHandler game = new GameHandler();
-        game.startGame(false);
+        game.startGame(true);
 
 
     }
