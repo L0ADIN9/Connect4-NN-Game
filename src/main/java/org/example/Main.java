@@ -40,9 +40,161 @@ public class Main {
         }
         return sb.toString();
     }
-    public static int getBotInputPos(){
+    /**
+     * Find the row where a piece would land if dropped in the given column.
+     * Returns -1 if the column is full.
+     */
+    private static int findLandingRow(int[][] board, int col) {
+        for (int row = 5; row >= 0; row--) {
+            if (board[row][col] == 0) return row;
+        }
+        return -1;
+    }
 
-        // encode board from model's perspective (player 2)
+    /**
+     * Check if a player can win by playing in the given column.
+     * Temporarily places the piece, checks, then undoes.
+     */
+    private static boolean canWinAt(int[][] board, int col, int player) {
+        int row = findLandingRow(board, col);
+        if (row < 0) return false;
+        board[row][col] = player;
+        boolean wins = GameHandler.checkWin(col, row);
+        board[row][col] = 0;
+        return wins;
+    }
+
+    public static int getBotInputPos(){
+        int[][] b = GameHandler.getBoard();
+
+        // =============================================
+        // PRIORITY 1: Win immediately if possible
+        // =============================================
+        for (int col = 0; col < 7; col++) {
+            if (GameHandler.isValidMove(col) && canWinAt(b, col, 2)) {
+                System.out.println("Heuristic: WINNING move at column " + col);
+                return col;
+            }
+        }
+
+        // =============================================
+        // PRIORITY 2: Block opponent's immediate win
+        // =============================================
+        int blockCol = -1;
+        int threatCount = 0;
+        for (int col = 0; col < 7; col++) {
+            if (GameHandler.isValidMove(col) && canWinAt(b, col, 1)) {
+                blockCol = col;
+                threatCount++;
+            }
+        }
+        if (threatCount >= 1) {
+            System.out.println("Heuristic: BLOCKING opponent win at column " + blockCol
+                    + " (threats: " + threatCount + ")");
+            return blockCol;
+        }
+
+        // =============================================
+        // PRIORITY 3: Block opponent's double-threat setup
+        // If the opponent could play somewhere next turn and
+        // create 2+ simultaneous winning threats (a fork),
+        // preemptively play in that column to prevent it.
+        // =============================================
+        for (int col = 0; col < 7; col++) {
+            if (!GameHandler.isValidMove(col)) continue;
+            int row = findLandingRow(b, col);
+            if (row < 0) continue;
+
+            // Simulate opponent playing here
+            b[row][col] = 1;
+            int futureThreats = 0;
+            for (int c2 = 0; c2 < 7; c2++) {
+                if (c2 == col && row - 1 < 0) continue;
+                int r2 = findLandingRow(b, c2);
+                if (r2 < 0) continue;
+                b[r2][c2] = 1;
+                if (GameHandler.checkWin(c2, r2)) futureThreats++;
+                b[r2][c2] = 0;
+            }
+            b[row][col] = 0;
+
+            if (futureThreats >= 2) {
+                // Also make sure our block doesn't let opponent win directly above
+                boolean safeBlock = true;
+                if (row - 1 >= 0) {
+                    b[row][col] = 2;
+                    b[row - 1][col] = 1;
+                    if (GameHandler.checkWin(col, row - 1)) safeBlock = false;
+                    b[row - 1][col] = 0;
+                    b[row][col] = 0;
+                }
+                if (safeBlock) {
+                    System.out.println("Heuristic: BLOCKING opponent fork at column " + col
+                            + " (would create " + futureThreats + " threats)");
+                    return col;
+                }
+            }
+        }
+
+        // =============================================
+        // PRIORITY 4: Identify columns to avoid
+        // Avoid moves that give the opponent a winning
+        // cell directly above, or that let the opponent
+        // win anywhere on their reply.
+        // =============================================
+        boolean[] avoid = new boolean[7];
+        int validCount = 0;
+        int avoidCount = 0;
+
+        for (int col = 0; col < 7; col++) {
+            if (!GameHandler.isValidMove(col)) continue;
+            validCount++;
+            int row = findLandingRow(b, col);
+            if (row < 0) continue;
+
+            // Check: does our move give opponent a win directly above?
+            if (row - 1 >= 0) {
+                b[row][col] = 2;
+                b[row - 1][col] = 1;
+                if (GameHandler.checkWin(col, row - 1)) {
+                    avoid[col] = true;
+                    avoidCount++;
+                }
+                b[row - 1][col] = 0;
+                b[row][col] = 0;
+            }
+
+            // Check: after our move, can opponent win immediately anywhere?
+            if (!avoid[col]) {
+                b[row][col] = 2;
+                for (int oCol = 0; oCol < 7; oCol++) {
+                    int oRow = findLandingRow(b, oCol);
+                    if (oRow < 0) continue;
+                    b[oRow][oCol] = 1;
+                    if (GameHandler.checkWin(oCol, oRow)) {
+                        // Opponent wins after our move — but only avoid if we
+                        // can't block that threat on our next turn (i.e., there
+                        // are multiple threats or we won't get to respond).
+                        // Simple check: would this create a NEW threat that
+                        // didn't exist before our move?
+                        b[row][col] = 0; // undo our move temporarily
+                        boolean alreadyThreat = canWinAt(b, oCol, 1);
+                        b[row][col] = 2; // re-apply
+                        if (!alreadyThreat) {
+                            avoid[col] = true;
+                            avoidCount++;
+                        }
+                    }
+                    b[oRow][oCol] = 0;
+                    if (avoid[col]) break;
+                }
+                b[row][col] = 0;
+            }
+        }
+
+        // =============================================
+        // FALL BACK: Neural network (with avoid filter)
+        // =============================================
         double[][] input = new double[42][1];
         String[] parts = encodeBoard(2).split(",");
         for (int i = 0; i < 42; i++) {
@@ -51,22 +203,32 @@ public class Main {
 
         double[][] output = model.forward(input);
 
-        // pick highest probability valid column
+        // Pick the best non-avoided column
         int best = -1;
         double bestScore = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < 7; i++) {
-            System.out.println(output[i][0]);
-            if (GameHandler.isValidMove(i) && output[i][0] > bestScore) {
+            System.out.println("Col " + i + ": nn=" + String.format("%.4f", output[i][0])
+                    + (avoid[i] ? " [AVOID]" : "")
+                    + (!GameHandler.isValidMove(i) ? " [FULL]" : ""));
+            if (GameHandler.isValidMove(i) && !avoid[i] && output[i][0] > bestScore) {
                 bestScore = output[i][0];
                 best = i;
             }
         }
-        System.out.println("Move");
 
+        // If all valid columns are avoided, just pick the best valid one anyway
+        if (best == -1) {
+            System.out.println("Warning: all columns flagged, falling back to best valid");
+            for (int i = 0; i < 7; i++) {
+                if (GameHandler.isValidMove(i) && output[i][0] > bestScore) {
+                    bestScore = output[i][0];
+                    best = i;
+                }
+            }
+        }
 
+        System.out.println("Move (NN): column " + best);
         return best;
-
-
     }
 
 
