@@ -7,7 +7,8 @@ import org.example.model.Model;
 public class Main {
 
 
-    private static Model model; 
+    private static Model model;
+    public static GameWindow gWindow;
 
 
     public static void main(String[] args) throws Exception {
@@ -17,7 +18,7 @@ public class Main {
 
 
         SwingUtilities.invokeLater(() -> {
-            new GameWindow();
+            gWindow = new GameWindow();
         });
         GameHandler game = new GameHandler();
         game.startGame(false);
@@ -86,6 +87,7 @@ public class Main {
         }
 
     }
+
 
 
 }

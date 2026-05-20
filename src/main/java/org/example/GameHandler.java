@@ -128,6 +128,10 @@ public class GameHandler {
     }
     public static void win(int who){
         System.out.println(who+ "won");
+        Main.gWindow.winUI(who);
     }
-    public static void draw(){System.out.println("draw");}
+    public static void draw(){
+        System.out.println("draw");
+        Main.gWindow.winUI(-1);
+    }
 }

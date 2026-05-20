@@ -24,13 +24,28 @@ public class GameWindow extends JFrame {
         rightSide.setBackground(Color.gray);
         leftSide.setBackground(Color.gray);
 
+
+
         add(boardP,BorderLayout.CENTER);
         add(leftSide, BorderLayout.WEST);
         add(rightSide, BorderLayout.EAST);
 
 
 
+
+
         setVisible(true);
+    }
+    public void winUI(int w){
+        System.out.println(w);
+        JPanel winner = new JPanel();
+        JLabel txt = new JLabel(w + " won!");
+        txt.setFont(new Font("Arial", Font.PLAIN, 48));
+        remove(boardP);
+        winner.add(txt,BorderLayout.CENTER);
+        add(winner,BorderLayout.CENTER);
+        setVisible(true);
+        repaint();
     }
 
 }

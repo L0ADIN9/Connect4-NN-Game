@@ -15,7 +15,7 @@ public class BoardPanel extends JPanel{
     public static boolean pressed;
 
     public BoardPanel() {
-        setBackground(Color.green);
+        setBackground(Color.gray);
         setFocusable(true);
 
         // player input stuff, should always be running
