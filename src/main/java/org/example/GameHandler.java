@@ -47,7 +47,7 @@ public class GameHandler {
             turnCnt++;
             GameWindow.boardP.repaint();
 
-        }
+        } 
         draw();
 
 

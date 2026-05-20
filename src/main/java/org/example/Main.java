@@ -7,7 +7,7 @@ import org.example.model.Model;
 public class Main {
 
 
-    private static Model model;
+    private static Model model; 
 
 
     public static void main(String[] args) throws Exception {
@@ -67,10 +67,12 @@ public class Main {
 
 
     }
+
+
     public synchronized static int getHumanInputPos(){
         synchronized (GameWindow.class) {
 
-            while (BoardPanel.pressedKey == -1 ) {
+            while (BoardPanel.mouseLocation == -1 ) {
                 try {
                     GameWindow.class.wait();
                 } catch (InterruptedException e) {
@@ -78,11 +80,12 @@ public class Main {
                 }
             }
 
-            int ret = BoardPanel.pressedKey;
-            BoardPanel.pressedKey = -1;
+            int ret = BoardPanel.mouseLocation;
+            BoardPanel.mouseLocation = -1;
             return ret;
         }
 
     }
+
 
 }

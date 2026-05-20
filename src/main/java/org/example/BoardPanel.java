@@ -3,17 +3,57 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class BoardPanel extends JPanel{
     private int padding = 20;
     private int gap = 10;
 
     public static int pressedKey = -1;
+    public static int mouseLocation = -1;
+    public static boolean pressed;
+
     public BoardPanel() {
-        setBackground(Color.gray);
+        setBackground(Color.green);
         setFocusable(true);
 
         // player input stuff, should always be running
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+                int bHeight = getHeight() - padding *2;
+                int bWidth = (int)(bHeight*7/6);
+                if (bWidth > getWidth() - padding * 2) {
+                    bWidth = getWidth() - padding * 2;
+                    bHeight = (int)(bWidth * (6.0 / 7.0));
+
+                }
+
+                int pd = (getWidth()-bWidth)/2;
+
+                int posX = e.getX() - pd;
+                double val = ((double)posX)/ ((double) bWidth);
+                val *= 7;
+                val /= 10;
+                if(e.getX()>=pd || e.getX()<=pd+bWidth){
+                    synchronized (GameWindow.class){
+                        mouseLocation = (int)(val*10);
+                        GameWindow.class.notifyAll();
+                    }
+                    repaint();
+                }else{
+                    mouseLocation = -1;
+                }
+
+               // mouseLocation = (int)(val*10);
+
+            }
+        });
+
+
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent k) {
@@ -34,6 +74,7 @@ public class BoardPanel extends JPanel{
                 }
             }
         });
+
 
 
     }
