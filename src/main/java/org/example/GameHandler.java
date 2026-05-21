@@ -31,14 +31,14 @@ public class GameHandler {
                 Thread.sleep(500);
 
                  mv = Main.getBotInputPos();
-               tp =  move(mv, 2);
+               tp =  move(mv, -1);
 
             }
 
             if(checkWin(mv,tp)){
                 GameWindow.boardP.repaint();
                 if(playerTurn) win(1);
-                else win(2);
+                else win(-1);
                 return;
             }
 
@@ -57,7 +57,7 @@ public class GameHandler {
     }
     public static int whoTurn(){
         if(playerTurn) return 1;
-        else return 2;
+        else return -1;
     }
     public static int[][] getBoard(){
         return board;
@@ -66,7 +66,7 @@ public class GameHandler {
         // pos is the x position of the dropped chip this move
         // who is which player's turn it is repersented numerically
         // 1 = human
-        // 2 = bot
+        // -1 = bot
         int top = 5;
         while(board[top][pos] != 0){
             top--;
@@ -132,6 +132,6 @@ public class GameHandler {
     }
     public static void draw(){
         System.out.println("draw");
-        Main.gWindow.winUI(-1);
+        Main.gWindow.winUI(0);
     }
 }
