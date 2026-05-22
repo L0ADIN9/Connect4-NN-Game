@@ -28,20 +28,19 @@ public class DataGenerator {
         return sb.toString();
     }
 
-    private void generateGame(FileWriter fw) throws IOException {
+    private void generateGame(FileWriter fw, int randomPrefixLength) throws IOException {
         ConnectFour board = new ConnectFour();
         int currentPlayer = 1;
         int lastCol = -1;
         String moveSequence = "";
         
-        // Randomize the first 8 moves to diversify the dataset, and because the solver is slow at depth 0-8.
-        for (int ply = 0; ply < 8; ply++) {
+        for (int ply = 0; ply < randomPrefixLength; ply++) {
             if (board.isFull() || (lastCol != -1 && board.checkWin(lastCol, 3 - currentPlayer))) {
-                return; // Game ended early
+                return;
             }
             int played = selectRandomValidMove(board);
             board.makeMove(played, currentPlayer);
-            moveSequence += (played + 1); // 1-indexed for the solver
+            moveSequence += (played + 1);
             lastCol = played;
             currentPlayer = 3 - currentPlayer;
         }
@@ -94,10 +93,12 @@ public class DataGenerator {
         }
     }
 
-    public void generate(int numGames, String filename) throws IOException {
-        FileWriter fw = new FileWriter(filename);
+    public void generate(int numGames, String filename, boolean append) throws IOException {
+        FileWriter fw = new FileWriter(filename, append);
         for (int i = 1; i <= numGames; i++) {
-            generateGame(fw);
+            // vary the random prefix: early games (0-3) and mid games (4-8)
+            int prefix = (i % 2 == 0) ? (int)(Math.random() * 4) : 4 + (int)(Math.random() * 5);
+            generateGame(fw, prefix);
             if (i % 100 == 0) System.out.println("Generated " + i + " games...");
         }
         fw.close();
@@ -106,7 +107,7 @@ public class DataGenerator {
     }
 
     public static void main(String[] args) throws IOException {
-        System.out.println("Starting optimal data generation...");
-        new DataGenerator().generate(5000, "optimalConnectFourData.txt");
+        System.out.println("Starting optimal data generation (10000 games, early+mid game focus)...");
+        new DataGenerator().generate(10000, "optimalConnectFourData.txt", true);
     }
 }
