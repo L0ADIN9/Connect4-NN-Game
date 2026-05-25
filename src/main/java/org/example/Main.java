@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         model = new Model(new int[]{42, 256, 128, 64, 7});
-        model.load("src/main/resources/saved_models/model_v3.txt");
+        model.load("src/main/resources/saved_models/model.txt");
 
 
 
@@ -21,7 +21,7 @@ public class Main {
             gWindow = new GameWindow();
         });
         GameHandler game = new GameHandler();
-        game.startGame(true);
+        game.startGame(false);
 
 
     }
