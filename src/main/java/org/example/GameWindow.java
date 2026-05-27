@@ -4,8 +4,10 @@ import java.awt.*;
 
 public class GameWindow extends JFrame {
 
+    private static CardLayout lyt;
+    public static StartPanel startP = new StartPanel();
     public static BoardPanel boardP = new BoardPanel();
-    private static JLabel txt;
+    public static EndPanel endP = new EndPanel();
 
     public GameWindow() {
 
@@ -17,60 +19,77 @@ public class GameWindow extends JFrame {
         setTitle("Connect 4");
         setSize(1000, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+
+        lyt = new CardLayout();
+        setLayout(lyt);
+
+
+    // Start Panel
+        startP.setOpaque(true);
+
+    // Game Panel
+
+        JLayeredPane lyp = new JLayeredPane();
+        lyp.setLayout(null);
+        lyp.setBounds(0,0,lyp.getWidth(),lyp.getHeight());
+
+        JPanel gamePanel = new JPanel();
+        gamePanel.setLayout(new BorderLayout());
+        gamePanel.setBackground(Color.gray);
+
+
         JPanel rightSide = new JPanel();
         rightSide.add(new JLabel("                   "));
+        rightSide.setBackground(Color.gray);
 
 
         JPanel leftSide = new JPanel();
         leftSide.add(new JLabel("                   "));
-
-
-        rightSide.setBackground(Color.gray);
         leftSide.setBackground(Color.gray);
 
 
-        boardP.setSize(400,600);
+        //boardP.setSize(400,600);
         boardP.setOpaque(true);
 
+        gamePanel.add(boardP,BorderLayout.CENTER);
+        boardP.setVisible(true);
+        gamePanel.add(leftSide, BorderLayout.WEST);
+        leftSide.setVisible(true);
+        gamePanel.add(rightSide, BorderLayout.EAST);
+        rightSide.setVisible(true);
+
+        //lyp.add(gamePanel, 2);
+        gamePanel.setVisible(true);
+
+        // End Panel
+       // lyp.add(endP,JLayeredPane.POPUP_LAYER);
+        //endP.setVisible(false);
 
 
 
 
-        add(boardP,BorderLayout.CENTER);
-        add(leftSide, BorderLayout.WEST);
-        add(rightSide, BorderLayout.EAST);
+
+
+        // Overall UI Stuff
+        add(startP,"START");
+        add(gamePanel,"GAME");
+
         setVisible(true);
 
-        txt = new JLabel("",SwingConstants.CENTER);
-        txt.setForeground(Color.black);
-        txt.setFont(new Font("Arial", Font.BOLD, 100));
-        txt.setOpaque(true);
-        this.add(boardP);
-        this.setGlassPane(txt);
-
-
-
 
 
     }
-    public void winUI(int w){
-        if(w == -1){
-            txt.setText("AI Wins!");
-        } else if (w == 1) {
-            txt.setText("Human Wins!");
-        }else{
-            txt.setText("Draw!");
 
-        }
-        boardP.setOpaque(true);
+    public static void startUI(){
+        lyt.show(Main.gWindow.getContentPane(),"GAME");
+    }
 
-        txt.setBackground(new Color(3, 3, 3, 20));
-        txt.setOpaque(false);
-        txt.setVisible(true);
-
-
+    public static void endUI(int w){
+        endP.setWin(w);
+        endP.setVisible(true);
+        endP.repaint();
 
     }
+
 
 }

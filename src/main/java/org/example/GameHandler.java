@@ -7,9 +7,10 @@ public class GameHandler {
     /*
     0 = empty slot
     1 = human chip
-    2 = bot chip
+    -1 = bot chip
      */
     public void startGame(boolean humanFirst) throws  Exception{
+
         clearBoard();
         playerTurn = humanFirst;
         turnCnt = 0;
@@ -128,10 +129,10 @@ public class GameHandler {
     }
     public static void win(int who){
         System.out.println(who+ "won");
-        Main.gWindow.winUI(who);
+        Main.END(who);
     }
     public static void draw(){
         System.out.println("draw");
-        Main.gWindow.winUI(0);
+        //Main.gWindow.winUI(0);
     }
 }

@@ -53,7 +53,7 @@ public class BoardPanel extends JPanel{
             }
         });
 
-
+/*
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent k) {
@@ -75,7 +75,7 @@ public class BoardPanel extends JPanel{
             }
         });
 
-
+*/
 
     }
 

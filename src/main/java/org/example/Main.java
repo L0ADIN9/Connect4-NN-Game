@@ -6,32 +6,59 @@ import org.example.model.Model;
 
 public class Main {
 
-
     private static Model model;
     public static GameWindow gWindow;
 
+    public static GameHandler game;
 
-    public static void main(String[] args) throws Exception {
-        model = new Model(new int[]{42, 256, 128, 64, 7});
-        model.load("src/main/resources/saved_models/model.txt");
-
-
+    public static void main(String[] args)  throws Exception{
 
         SwingUtilities.invokeLater(() -> {
             gWindow = new GameWindow();
         });
-        GameHandler game = new GameHandler();
-        game.startGame(false);
-
 
     }
 
+    public static void START(String diff, boolean hfst)throws Exception{
+        new Thread(() -> {
+            try {
+                model = new Model(new int[]{42, 256, 128, 64, 7});
+                System.out.println(diff);
+                if(diff.equals("HARD")){
+                    model.load("src/main/resources/saved_models/model_mlp_v1.txt");
+
+                } else if (diff.equals("EASY")) {
+                    model.load("src/main/resources/saved_models/model_mlp_v2.txt");
+                }else {
+                    model.load("src/main/resources/saved_models/model_mlp_v3.txt");
+                }
+                game = new GameHandler();
+                game.startGame(hfst);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+        Thread.sleep(400);
+        gWindow.startUI();
+    }
+
+    public static void END(int w){
+        gWindow.endUI(w);
+
+    }
+
+
+    /**
+     * Converts 2D array of the board to a string which can be fed into the model.
+     * The players' identifacation numbers are irrelevant on the board aslong as currentPlayer parameter is correct.
+     */
     private static String encodeBoard(int currentPlayer) {
         for (int[] row : GameHandler.getBoard()) {
             for (int element : row) {
-                System.out.print(element + "\t"); // Using \t for better alignment
+           //     System.out.print(element + "\t"); // Using \t for better alignment
             }
-            System.out.println();
+            //System.out.println();
         }
         int[][] b = GameHandler.getBoard();
         int opponent = 3 - currentPlayer;
@@ -46,6 +73,7 @@ public class Main {
         }
         return sb.toString();
     }
+
     /**
      * Find the row where a piece would land if dropped in the given column.
      * Returns -1 if the column is full.
@@ -70,6 +98,10 @@ public class Main {
         return wins;
     }
 
+    /**
+     * getBotInputPos method returns the bot's choosen move comlumn.
+     * current has the follow heuristics: take winning move, block player winning move, prevent next turn winning move
+     */
     public static int getBotInputPos(){
 
 
@@ -146,7 +178,7 @@ public class Main {
 
         // If all valid columns are avoided
         if (best == -1) {
-            System.out.println("Warning: all columns flagged, falling back to best valid");
+            System.out.println("all columns flagged, falling back to best valid");
             for (int i = 0; i < 7; i++) {
                 if (GameHandler.isValidMove(i) && output[i][0] > bestScore) {
                     bestScore = output[i][0];
@@ -161,10 +193,12 @@ public class Main {
 
     }
 
-
+    /**
+     * gets human input position, returns choosen column. Current mouse supported, can be reverse to keyboard
+     * waits on an update of the mouseLocation variable within BoardPanel
+     */
     public synchronized static int getHumanInputPos(){
         synchronized (GameWindow.class) {
-
             while (BoardPanel.mouseLocation == -1 ) {
                 try {
                     GameWindow.class.wait();
@@ -179,7 +213,4 @@ public class Main {
         }
 
     }
-
-
-
 }
