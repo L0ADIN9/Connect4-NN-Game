@@ -13,7 +13,7 @@ public class EndPanel extends JPanel {
 
         endTXT = new JLabel("win_test_popup!",SwingConstants.CENTER);
         endTXT.setForeground(Color.black);
-        endTXT.setFont(new Font("Arial", Font.BOLD, 130));
+        endTXT.setFont(new Font("Arial", Font.BOLD, 100));
         endTXT.setOpaque(false);
 
         JPanel bck = new JPanel();
