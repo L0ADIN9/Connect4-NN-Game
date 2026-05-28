@@ -14,6 +14,8 @@ public class GameHandler {
         clearBoard();
         playerTurn = humanFirst;
         turnCnt = 0;
+        Thread.sleep(200);
+
         while (turnCnt < 42){
             int mv=0;
             int tp = -1;
@@ -80,7 +82,7 @@ public class GameHandler {
         return top;
     }
     public static boolean isValidMove(int pos){
-        if (0>pos || pos>7) return false;
+        if (0>pos || pos>=7) return false;
         int top = 5;
         while(board[top][pos] != 0){
             top--;

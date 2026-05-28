@@ -19,6 +19,11 @@ public class Main {
 
     }
 
+    public static void RESET(){
+        gWindow.homeUI();
+
+    }
+
     public static void START(String diff, boolean hfst)throws Exception{
         new Thread(() -> {
             try {

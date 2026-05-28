@@ -41,9 +41,9 @@ public class StartPanel extends JPanel {
 
         ButtonGroup diffSelect = new ButtonGroup();
 
-        JRadioButton easy = new JRadioButton("Hard");
-        JRadioButton medium = new JRadioButton("Harder");
-        JRadioButton hard = new JRadioButton("Hardest");
+        JRadioButton easy = new JRadioButton("Easy");
+        JRadioButton medium = new JRadioButton("Medium");
+        JRadioButton hard = new JRadioButton("Hard");
 
         easy.addActionListener(e -> selectedDiff = "EASY");
         medium.addActionListener(e -> selectedDiff = "MEDIUM");

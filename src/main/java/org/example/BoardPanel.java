@@ -7,7 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class BoardPanel extends JPanel{
-    private int padding = 20;
+    private int padding = 40;
     private int gap = 10;
 
     public static int pressedKey = -1;

@@ -8,6 +8,7 @@ public class GameWindow extends JFrame {
     public static StartPanel startP = new StartPanel();
     public static BoardPanel boardP = new BoardPanel();
     public static EndPanel endP = new EndPanel();
+    public static JLayeredPane lyp;
 
     public GameWindow() {
 
@@ -29,8 +30,8 @@ public class GameWindow extends JFrame {
 
     // Game Panel
 
-        JLayeredPane lyp = new JLayeredPane();
-        lyp.setLayout(null);
+        lyp = new JLayeredPane();
+        lyp.setLayout(new OverlayLayout(lyp));
         lyp.setBounds(0,0,lyp.getWidth(),lyp.getHeight());
 
         JPanel gamePanel = new JPanel();
@@ -58,12 +59,12 @@ public class GameWindow extends JFrame {
         gamePanel.add(rightSide, BorderLayout.EAST);
         rightSide.setVisible(true);
 
-        //lyp.add(gamePanel, 2);
-        gamePanel.setVisible(true);
+        lyp.add(gamePanel, JLayeredPane.DEFAULT_LAYER);
 
         // End Panel
-       // lyp.add(endP,JLayeredPane.POPUP_LAYER);
-        //endP.setVisible(false);
+        lyp.add(endP,JLayeredPane.PALETTE_LAYER);
+        endP.setVisible(false);
+
 
 
 
@@ -72,7 +73,7 @@ public class GameWindow extends JFrame {
 
         // Overall UI Stuff
         add(startP,"START");
-        add(gamePanel,"GAME");
+        add(lyp,"GAME");
 
         setVisible(true);
 
@@ -82,6 +83,16 @@ public class GameWindow extends JFrame {
 
     public static void startUI(){
         lyt.show(Main.gWindow.getContentPane(),"GAME");
+        lyp.revalidate();
+        lyp.repaint();
+        lyp.setVisible(true);
+    }
+    public static void homeUI(){
+        lyt.show(Main.gWindow.getContentPane(),"START");
+        lyp.revalidate();
+        lyp.repaint();
+        lyp.setVisible(false);
+        endP.setVisible(false);
     }
 
     public static void endUI(int w){
