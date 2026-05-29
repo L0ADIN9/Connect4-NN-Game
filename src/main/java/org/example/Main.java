@@ -6,27 +6,65 @@ import org.example.model.Model;
 
 public class Main {
 
-
     private static Model model;
     public static GameWindow gWindow;
 
+    public static GameHandler game;
 
-    public static void main(String[] args) throws Exception {
-        model = new Model(new int[]{42, 256, 128, 64, 7});
-        model.load("src/main/resources/saved_models/model.txt");
-
-
+    public static void main(String[] args)  throws Exception{
 
         SwingUtilities.invokeLater(() -> {
             gWindow = new GameWindow();
         });
-        GameHandler game = new GameHandler();
-        game.startGame(false);
-
 
     }
 
+    public static void RESET(){
+        gWindow.homeUI();
+
+    }
+
+    public static void START(String diff, boolean hfst)throws Exception{
+        new Thread(() -> {
+            try {
+                model = new Model(new int[]{42, 256, 128, 64, 7});
+                System.out.println(diff);
+                if(diff.equals("HARD")){
+                    model.load("src/main/resources/saved_models/model_mlp_v1.txt");
+
+                } else if (diff.equals("EASY")) {
+                    model.load("src/main/resources/saved_models/model_mlp_v2.txt");
+                }else {
+                    model.load("src/main/resources/saved_models/model_mlp_v3.txt");
+                }
+                game = new GameHandler();
+                game.startGame(hfst);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+        Thread.sleep(400);
+        gWindow.startUI();
+    }
+
+    public static void END(int w){
+        gWindow.endUI(w);
+
+    }
+
+
+    /**
+     * Converts 2D array of the board to a string which can be fed into the model.
+     * The players' identifacation numbers are irrelevant on the board aslong as currentPlayer parameter is correct.
+     */
     private static String encodeBoard(int currentPlayer) {
+        for (int[] row : GameHandler.getBoard()) {
+            for (int element : row) {
+           //     System.out.print(element + "\t"); // Using \t for better alignment
+            }
+            //System.out.println();
+        }
         int[][] b = GameHandler.getBoard();
         int opponent = 3 - currentPlayer;
         StringBuilder sb = new StringBuilder();
@@ -40,6 +78,7 @@ public class Main {
         }
         return sb.toString();
     }
+
     /**
      * Find the row where a piece would land if dropped in the given column.
      * Returns -1 if the column is full.
@@ -64,22 +103,26 @@ public class Main {
         return wins;
     }
 
+    /**
+     * getBotInputPos method returns the bot's choosen move comlumn.
+     * current has the follow heuristics: take winning move, block player winning move, prevent next turn winning move
+     */
     public static int getBotInputPos(){
+
+
         int[][] b = GameHandler.getBoard();
 
-        // =============================================
-        // PRIORITY 1: Win immediately if possible
-        // =============================================
+        // Take AI Winning Move
+
         for (int col = 0; col < 7; col++) {
-            if (GameHandler.isValidMove(col) && canWinAt(b, col, 2)) {
+            if (GameHandler.isValidMove(col) && canWinAt(b, col, -1)) {
                 System.out.println("Heuristic: WINNING move at column " + col);
                 return col;
             }
         }
 
-        // =============================================
-        // PRIORITY 2: Block opponent's immediate win
-        // =============================================
+        // Block Human Winning Move
+
         int blockCol = -1;
         int threatCount = 0;
         for (int col = 0; col < 7; col++) {
@@ -94,131 +137,53 @@ public class Main {
             return blockCol;
         }
 
-        // =============================================
-        // PRIORITY 3: Block opponent's double-threat setup
-        // If the opponent could play somewhere next turn and
-        // create 2+ simultaneous winning threats (a fork),
-        // preemptively play in that column to prevent it.
-        // =============================================
-        for (int col = 0; col < 7; col++) {
-            if (!GameHandler.isValidMove(col)) continue;
-            int row = findLandingRow(b, col);
-            if (row < 0) continue;
 
-            // Simulate opponent playing here
-            b[row][col] = 1;
-            int futureThreats = 0;
-            for (int c2 = 0; c2 < 7; c2++) {
-                if (c2 == col && row - 1 < 0) continue;
-                int r2 = findLandingRow(b, c2);
-                if (r2 < 0) continue;
-                b[r2][c2] = 1;
-                if (GameHandler.checkWin(c2, r2)) futureThreats++;
-                b[r2][c2] = 0;
-            }
-            b[row][col] = 0;
+        // Block Gives Human Winning Move
 
-            if (futureThreats >= 2) {
-                // Also make sure our block doesn't let opponent win directly above
-                boolean safeBlock = true;
-                if (row - 1 >= 0) {
-                    b[row][col] = 2;
-                    b[row - 1][col] = 1;
-                    if (GameHandler.checkWin(col, row - 1)) safeBlock = false;
-                    b[row - 1][col] = 0;
-                    b[row][col] = 0;
-                }
-                if (safeBlock) {
-                    System.out.println("Heuristic: BLOCKING opponent fork at column " + col
-                            + " (would create " + futureThreats + " threats)");
-                    return col;
-                }
-            }
-        }
-
-        // =============================================
-        // PRIORITY 4: Identify columns to avoid
-        // Avoid moves that give the opponent a winning
-        // cell directly above, or that let the opponent
-        // win anywhere on their reply.
-        // =============================================
         boolean[] avoid = new boolean[7];
-        int validCount = 0;
-        int avoidCount = 0;
 
         for (int col = 0; col < 7; col++) {
             if (!GameHandler.isValidMove(col)) continue;
-            validCount++;
             int row = findLandingRow(b, col);
-            if (row < 0) continue;
 
-            // Check: does our move give opponent a win directly above?
             if (row - 1 >= 0) {
-                b[row][col] = 2;
+                b[row][col] = -1;
                 b[row - 1][col] = 1;
                 if (GameHandler.checkWin(col, row - 1)) {
                     avoid[col] = true;
-                    avoidCount++;
                 }
                 b[row - 1][col] = 0;
                 b[row][col] = 0;
             }
-
-            // Check: after our move, can opponent win immediately anywhere?
-            if (!avoid[col]) {
-                b[row][col] = 2;
-                for (int oCol = 0; oCol < 7; oCol++) {
-                    int oRow = findLandingRow(b, oCol);
-                    if (oRow < 0) continue;
-                    b[oRow][oCol] = 1;
-                    if (GameHandler.checkWin(oCol, oRow)) {
-                        // Opponent wins after our move — but only avoid if we
-                        // can't block that threat on our next turn (i.e., there
-                        // are multiple threats or we won't get to respond).
-                        // Simple check: would this create a NEW threat that
-                        // didn't exist before our move?
-                        b[row][col] = 0; // undo our move temporarily
-                        boolean alreadyThreat = canWinAt(b, oCol, 1);
-                        b[row][col] = 2; // re-apply
-                        if (!alreadyThreat) {
-                            avoid[col] = true;
-                            avoidCount++;
-                        }
-                    }
-                    b[oRow][oCol] = 0;
-                    if (avoid[col]) break;
-                }
-                b[row][col] = 0;
-            }
         }
 
-        // =============================================
-        // FALL BACK: Neural network (with avoid filter)
-        // =============================================
+
+
+        // NN predictions
+
         double[][] input = new double[42][1];
-        String[] parts = encodeBoard(2).split(",");
+        String[] parts = encodeBoard(-1).split(",");
         for (int i = 0; i < 42; i++) {
             input[i][0] = Double.parseDouble(parts[i]);
         }
 
         double[][] output = model.forward(input);
 
-        // Pick the best non-avoided column
+        // Pick the best column
         int best = -1;
         double bestScore = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < 7; i++) {
-            System.out.println("Col " + i + ": nn=" + String.format("%.4f", output[i][0])
-                    + (avoid[i] ? " [AVOID]" : "")
-                    + (!GameHandler.isValidMove(i) ? " [FULL]" : ""));
+            System.out.println(output[i][0]);
+
             if (GameHandler.isValidMove(i) && !avoid[i] && output[i][0] > bestScore) {
                 bestScore = output[i][0];
                 best = i;
             }
         }
 
-        // If all valid columns are avoided, just pick the best valid one anyway
+        // If all valid columns are avoided
         if (best == -1) {
-            System.out.println("Warning: all columns flagged, falling back to best valid");
+            System.out.println("all columns flagged, falling back to best valid");
             for (int i = 0; i < 7; i++) {
                 if (GameHandler.isValidMove(i) && output[i][0] > bestScore) {
                     bestScore = output[i][0];
@@ -226,15 +191,19 @@ public class Main {
                 }
             }
         }
+        
 
-        System.out.println("Move (NN): column " + best);
+        System.out.println("Bot Move:" + best);
         return best;
+
     }
 
-
+    /**
+     * gets human input position, returns choosen column. Current mouse supported, can be reverse to keyboard
+     * waits on an update of the mouseLocation variable within BoardPanel
+     */
     public synchronized static int getHumanInputPos(){
         synchronized (GameWindow.class) {
-
             while (BoardPanel.mouseLocation == -1 ) {
                 try {
                     GameWindow.class.wait();
@@ -249,7 +218,4 @@ public class Main {
         }
 
     }
-
-
-
 }

@@ -50,7 +50,7 @@ public class Trainer {
             finalLoss = avgLoss;
         }
 
-        model.save("src/model/saved_models/model.txt");
+        model.save("src/model/saved_models/model_mlp_v1.txt");
 
         return finalLoss;
     }

@@ -7,7 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class BoardPanel extends JPanel{
-    private int padding = 20;
+    private int padding = 40;
     private int gap = 10;
 
     public static int pressedKey = -1;
@@ -53,7 +53,7 @@ public class BoardPanel extends JPanel{
             }
         });
 
-
+/*
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent k) {
@@ -75,7 +75,7 @@ public class BoardPanel extends JPanel{
             }
         });
 
-
+*/
 
     }
 
@@ -105,7 +105,7 @@ public class BoardPanel extends JPanel{
             for(int j = 0; j< 6; j++){
                 Color cl = Color.white;
                 if(brd[j][i] == 1) cl = Color.yellow;
-                if(brd[j][i] == 2) cl = Color.red;
+                if(brd[j][i] == -1) cl = Color.red;
 
                 g.setColor(cl);
                 g.fillOval(centX + i*cellScale+(int)(.1*cellScale),centY+j*cellScale+(int)(.1*cellScale), (int)(.8*cellScale),(int)(.8*cellScale));

@@ -7,12 +7,15 @@ public class GameHandler {
     /*
     0 = empty slot
     1 = human chip
-    2 = bot chip
+    -1 = bot chip
      */
     public void startGame(boolean humanFirst) throws  Exception{
+
         clearBoard();
         playerTurn = humanFirst;
         turnCnt = 0;
+        Thread.sleep(200);
+
         while (turnCnt < 42){
             int mv=0;
             int tp = -1;
@@ -31,14 +34,14 @@ public class GameHandler {
                 Thread.sleep(500);
 
                  mv = Main.getBotInputPos();
-               tp =  move(mv, 2);
+               tp =  move(mv, -1);
 
             }
 
             if(checkWin(mv,tp)){
                 GameWindow.boardP.repaint();
                 if(playerTurn) win(1);
-                else win(2);
+                else win(-1);
                 return;
             }
 
@@ -57,7 +60,7 @@ public class GameHandler {
     }
     public static int whoTurn(){
         if(playerTurn) return 1;
-        else return 2;
+        else return -1;
     }
     public static int[][] getBoard(){
         return board;
@@ -66,7 +69,7 @@ public class GameHandler {
         // pos is the x position of the dropped chip this move
         // who is which player's turn it is repersented numerically
         // 1 = human
-        // 2 = bot
+        // -1 = bot
         int top = 5;
         while(board[top][pos] != 0){
             top--;
@@ -79,7 +82,7 @@ public class GameHandler {
         return top;
     }
     public static boolean isValidMove(int pos){
-        if (0>pos || pos>7) return false;
+        if (0>pos || pos>=7) return false;
         int top = 5;
         while(board[top][pos] != 0){
             top--;
@@ -128,10 +131,10 @@ public class GameHandler {
     }
     public static void win(int who){
         System.out.println(who+ "won");
-        Main.gWindow.winUI(who);
+        Main.END(who);
     }
     public static void draw(){
         System.out.println("draw");
-        Main.gWindow.winUI(-1);
+        //Main.gWindow.winUI(0);
     }
 }

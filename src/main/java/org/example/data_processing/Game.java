@@ -116,7 +116,7 @@ public class Game {
 
     public static void main(String[] args) throws Exception {
         Model model = new Model(new int[]{42, 256, 128, 64, 7});
-        model.load("src/model/saved_models/model.txt");
+        model.load("src/model/saved_models/model_mlp_v1.txt");
         new Game(model).play();
     }
 }
