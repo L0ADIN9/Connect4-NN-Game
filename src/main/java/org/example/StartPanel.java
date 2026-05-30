@@ -27,7 +27,7 @@ public class StartPanel extends JPanel {
 
         sButton.addActionListener( k ->{
             try {
-                Main.START(selectedDiff,false);
+                Main.START(selectedDiff,true);
 
             } catch (Exception e) {
                 e.printStackTrace();

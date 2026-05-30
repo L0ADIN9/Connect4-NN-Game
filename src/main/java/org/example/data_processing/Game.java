@@ -49,7 +49,7 @@ public class Game {
     }
 
     private int modelMove() {
-        // encode board from model's perspective (player 2)
+        // encode board from model's perspective  (player 2)
         double[][] input = new double[42][1];
         String[] parts = encodeBoard(2).split(",");
         for (int i = 0; i < 42; i++) {
@@ -58,7 +58,7 @@ public class Game {
 
         double[][] output = model.forward(input);
 
-        // pick highest probability valid column
+        // pick highest probabality valid column
         int best = -1;
         double bestScore = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < 7; i++) {

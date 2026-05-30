@@ -11,6 +11,8 @@ public class DataLoader {
     private int splitIndex;
 
     public DataLoader(String filename) throws Exception {
+
+
         Scanner sc = new Scanner(new File(filename));
         while (sc.hasNextLine()) {
             String line = sc.nextLine().trim();
