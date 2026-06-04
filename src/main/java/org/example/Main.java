@@ -11,6 +11,7 @@ public class Main {
     private static SolverC4 solver;
     private static String currentDiff = "MEDIUM";
     private static final String ZACK_MODE = "ZACK";
+    public static boolean isZachMode = false;
     public static GameWindow gWindow;
 
     public static GameHandler game;
@@ -46,6 +47,9 @@ public class Main {
                 }
                 if(diff.equals(ZACK_MODE)){
                     solver = new SolverC4();
+                    isZachMode = true;
+
+
                 }
                 game = new GameHandler();
                 game.startGame(hfst);
@@ -71,9 +75,7 @@ public class Main {
         }
     }
 
-    public static boolean isZackMode(){
-        return currentDiff.equals(ZACK_MODE);
-    }
+
 
 
     /**
@@ -126,7 +128,7 @@ public class Main {
 
 
         int[][] b = GameHandler.getBoard();
-        if(isZackMode() && solver != null){
+        if( isZachMode && solver != null){
             return getPerfectMove(b);
         }
 

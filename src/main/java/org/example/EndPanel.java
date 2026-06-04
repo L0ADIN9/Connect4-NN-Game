@@ -46,7 +46,7 @@ public class EndPanel extends JPanel {
 
     public static void setWin(int w){
         if(w == -1){
-            endTXT.setText(Main.isZackMode() ? "You Lose!" : "AI Wins!");
+            endTXT.setText("AI Wins!");
         } else if (w == 1) {
             endTXT.setText("Human Wins!");
         }else{

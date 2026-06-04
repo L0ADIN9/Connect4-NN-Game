@@ -10,7 +10,7 @@ public class SolverC4 {
     public SolverC4() {
         try {
             ProcessBuilder pb = new ProcessBuilder("./c4solver");
-            pb.directory(new File("tools/connect4"));
+            pb.directory(new File("src/main/resources/saved_models/optimalConnectFourData.txt"));
             pb.redirectErrorStream(true);
             process = pb.start();
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));

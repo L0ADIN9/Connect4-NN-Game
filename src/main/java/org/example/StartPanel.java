@@ -41,7 +41,7 @@ public class StartPanel extends JPanel {
         JRadioButton easy = new JRadioButton("Easy");
         JRadioButton medium = new JRadioButton("Medium");
         JRadioButton hard = new JRadioButton("Hard");
-        JRadioButton zack = new JRadioButton("P v. Z (impossible).");
+        JRadioButton zack = new JRadioButton("Impossible");
 
         easy.addActionListener(e -> selectedDiff = "EASY");
         medium.addActionListener(e -> selectedDiff = "MEDIUM");
