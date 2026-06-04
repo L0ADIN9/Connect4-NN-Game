@@ -1,5 +1,6 @@
 package org.example;
 import javax.swing.SwingUtilities;
+import org.example.data_processing.SolverC4;
 import org.example.model.Model;
 
 
@@ -7,6 +8,9 @@ import org.example.model.Model;
 public class Main {
 
     private static Model model;
+    private static SolverC4 solver;
+    private static String currentDiff = "MEDIUM";
+    private static final String ZACK_MODE = "ZACK";
     public static GameWindow gWindow;
 
     public static GameHandler game;
@@ -20,6 +24,7 @@ public class Main {
     }
 
     public static void RESET(){
+        closeSolver();
         gWindow.homeUI();
 
     }
@@ -27,15 +32,20 @@ public class Main {
     public static void START(String diff, boolean hfst)throws Exception{
         new Thread(() -> {
             try {
+                currentDiff = diff;
+                closeSolver();
                 model = new Model(new int[]{42, 256, 128, 64, 7});
                 System.out.println(diff);
-                if(diff.equals("HARD")){
+                if(diff.equals("HARD") || diff.equals(ZACK_MODE)){
                     model.load("src/main/resources/saved_models/model_mlp_v1.txt");
 
                 } else if (diff.equals("EASY")) {
                     model.load("src/main/resources/saved_models/model_mlp_v2.txt");
                 }else {
                     model.load("src/main/resources/saved_models/model_mlp_v3.txt");
+                }
+                if(diff.equals(ZACK_MODE)){
+                    solver = new SolverC4();
                 }
                 game = new GameHandler();
                 game.startGame(hfst);
@@ -49,22 +59,28 @@ public class Main {
     }
 
     public static void END(int w){
+        closeSolver();
         gWindow.endUI(w);
 
     }
 
+    private static void closeSolver(){
+        if(solver != null){
+            solver.close();
+            solver = null;
+        }
+    }
+
+    public static boolean isZackMode(){
+        return currentDiff.equals(ZACK_MODE);
+    }
+
 
     /**
-     * Converts 2D array of the board to a string which can be fed into the model.
-     * The players' identifacation numbers are irrelevant on the board aslong as currentPlayer parameter is correct.
+     * Converts the board into the comma-separated vector expected by the model.
+     * The values are read relative to the player being scored.
      */
     private static String encodeBoard(int currentPlayer) {
-        for (int[] row : GameHandler.getBoard()) {
-            for (int element : row) {
-           //     System.out.print(element + "\t"); // Using \t for better alignment
-            }
-            //System.out.println();
-        }
         int[][] b = GameHandler.getBoard();
         int opponent = -currentPlayer;
         StringBuilder sb = new StringBuilder();
@@ -80,7 +96,7 @@ public class Main {
     }
 
     /**
-     * Find the row where a piece would land if dropped in the given column.
+     * Finds the row where a piece would land if dropped in the given column.
      * Returns -1 if the column is full.
      */
     private static int findLandingRow(int[][] board, int col) {
@@ -91,8 +107,7 @@ public class Main {
     }
 
     /**
-     * Check if a player can win by playing in the given column.
-     * Temporarily places the piece, checks, then undoes.
+     * Checks whether the given player can win by playing this column.
      */
     private static boolean canWinAt(int[][] board, int col, int player) {
         int row = findLandingRow(board, col);
@@ -104,16 +119,18 @@ public class Main {
     }
 
     /**
-     * getBotInputPos method returns the bot's choosen move comlumn.
-     * current has the follow heuristics: take winning move, block player winning move, prevent next turn winning move
+     * Chooses the bot's column. Normal modes use tactical checks before the model.
+     * Zack mode uses the external solver.
      */
     public static int getBotInputPos(){
 
 
         int[][] b = GameHandler.getBoard();
+        if(isZackMode() && solver != null){
+            return getPerfectMove(b);
+        }
 
-        // Take AI Winning Move
-
+        // Win immediately if possible.
         for (int col = 0; col < 7; col++) {
             if (GameHandler.isValidMove(col) && canWinAt(b, col, -1)) {
                 System.out.println("Heuristic: WINNING move at column " + col);
@@ -121,8 +138,7 @@ public class Main {
             }
         }
 
-        // Block Human Winning Move
-
+        // Block an immediate human win.
         int blockCol = -1;
         int threatCount = 0;
         for (int col = 0; col < 7; col++) {
@@ -138,8 +154,7 @@ public class Main {
         }
 
 
-        // Block Gives Human Winning Move
-
+        // Avoid moves that give the human an immediate reply.
         boolean[] avoid = new boolean[7];
 
         for (int col = 0; col < 7; col++) {
@@ -159,8 +174,7 @@ public class Main {
 
 
 
-        // NN predictions
-
+        // Let the model rank the remaining columns.
         double[][] input = new double[42][1];
         String[] parts = encodeBoard(-1).split(",");
         for (int i = 0; i < 42; i++) {
@@ -169,7 +183,7 @@ public class Main {
 
         double[][] output = model.forward(input);
 
-        // Pick the best column
+        // Pick the highest-ranked legal column.
         int best = -1;
         double bestScore = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < 7; i++) {
@@ -181,9 +195,9 @@ public class Main {
             }
         }
 
-        // If all valid columns are avoided
+        // If every option looked risky, still make a legal move.
         if (best == -1) {
-            System.out.println("all columns flagged, falling back to best valid");
+            System.out.println("No safe column found; using best valid move.");
             for (int i = 0; i < 7; i++) {
                 if (GameHandler.isValidMove(i) && output[i][0] > bestScore) {
                     bestScore = output[i][0];
@@ -198,9 +212,43 @@ public class Main {
 
     }
 
+    private static int getPerfectMove(int[][] b){
+        for (int col = 0; col < 7; col++) {
+            if (GameHandler.isValidMove(col) && canWinAt(b, col, -1)) {
+                System.out.println("Zack move: " + col);
+                return col;
+            }
+        }
+
+        int best = -1;
+        int bestOpponentScore = Integer.MAX_VALUE;
+        String sequence = GameHandler.getMoveSequence();
+
+        for (int col = 0; col < 7; col++) {
+            if (GameHandler.isValidMove(col)) {
+                int opponentScore = solver.getScore(sequence + (col + 1));
+                if (opponentScore < bestOpponentScore) {
+                    bestOpponentScore = opponentScore;
+                    best = col;
+                }
+            }
+        }
+
+        if (best == -1) {
+            for (int col = 0; col < 7; col++) {
+                if (GameHandler.isValidMove(col)) {
+                    best = col;
+                    break;
+                }
+            }
+        }
+
+        System.out.println("Zack move: " + best);
+        return best;
+    }
+
     /**
-     * gets human input position, returns choosen column. Current mouse supported, can be reverse to keyboard
-     * waits on an update of the mouseLocation variable within BoardPanel
+     * Waits until the player clicks a column and returns that column.
      */
     public synchronized static int getHumanInputPos(){
         synchronized (GameWindow.class) {

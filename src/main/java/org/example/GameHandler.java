@@ -4,6 +4,7 @@ public class GameHandler {
     private static boolean playerTurn = true;
     private static int [][] board = new int[6][7];
     private static int turnCnt = 0;
+    private static String moveSequence = "";
     /*
     0 = empty slot
     1 = human chip
@@ -57,6 +58,7 @@ public class GameHandler {
     }
     public static void clearBoard(){
         board = new int[6][7];
+        moveSequence = "";
     }
     public static int whoTurn(){
         if(playerTurn) return 1;
@@ -64,6 +66,9 @@ public class GameHandler {
     }
     public static int[][] getBoard(){
         return board;
+    }
+    public static String getMoveSequence(){
+        return moveSequence;
     }
     public static int move(int pos, int who){
         // pos is the x position of the dropped chip this move
@@ -79,6 +84,7 @@ public class GameHandler {
             }
         }
         board[top][pos] = who;
+        moveSequence += (pos + 1);
         return top;
     }
     public static boolean isValidMove(int pos){
@@ -135,6 +141,6 @@ public class GameHandler {
     }
     public static void draw(){
         System.out.println("draw");
-        //Main.gWindow.winUI(0);
+        Main.END(0);
     }
 }
