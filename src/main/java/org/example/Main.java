@@ -66,7 +66,7 @@ public class Main {
             //System.out.println();
         }
         int[][] b = GameHandler.getBoard();
-        int opponent = 3 - currentPlayer;
+        int opponent = -currentPlayer;
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
